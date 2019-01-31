@@ -8,7 +8,7 @@ import paramiko
 from getpass import getpass
 import re
 import sys
-
+# testing out github. here's my change
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 mac_pattern = re.compile('([0-9a-fA-F]{4}.[0-9a-fA-F]{4}.[0-9a-fA-F]{4})')
