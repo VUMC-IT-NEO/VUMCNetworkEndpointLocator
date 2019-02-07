@@ -62,38 +62,44 @@ def parse_cdp(response, pattern):
         return
 
 # METHOD ============================================================
-ip_trace = input('What is the IP you want to trace? ')
-username = input('Username: ')
-password = getpass('Password: ')
-gateway_ip = find_gateway(ip_trace)
-print(f'The gateway is {gateway_ip}')
-print(f'Logging into gateway IP: ' + gateway_ip)
-print('\n------------------------------------------------------------')
+while True:
+    ip_trace = input('What is the IP you want to trace? ')
+    username = input('Username: ')
+    password = getpass('Password: ')
+    gateway_ip = find_gateway(ip_trace)
+    print(f'The gateway is {gateway_ip}')
+    print(f'Logging into gateway IP: ' + gateway_ip)
+    print('\n------------------------------------------------------------')
 
-stdout = ssh_login(gateway_ip, arp_command, ip_trace)
-mac_address = parse(stdout, mac_pattern)
-print(f"The mac address associated with {ip_trace} is: " + mac_address)
+    stdout = ssh_login(gateway_ip, arp_command, ip_trace)
+    mac_address = parse(stdout, mac_pattern)
+    print(f"The mac address associated with {ip_trace} is: " + mac_address)
 
-stdout = ssh_login(gateway_ip, mac_command, mac_address)
-interface = parse(stdout, int_pattern)
-print(f"The associated interface with {mac_address} is: " + interface)
+    stdout = ssh_login(gateway_ip, mac_command, mac_address)
+    interface = parse(stdout, int_pattern)
+    print(f"The associated interface with {mac_address} is: " + interface)
 
-cdp_ip = gateway_ip
+    cdp_ip = gateway_ip
 
-while cdp_neighbors == 0:
-    cdp_command = (f'show cdp neighbors ')
-    cdp_param = (f'{interface} detail')
-    stdout = ssh_login(cdp_ip, cdp_command, cdp_param)
-    cdp_ip = parse_cdp(stdout, ip_pattern)
-    if cdp_neighbors == 0:
-        print(f"The switch IP address associated with {interface} is: " + cdp_ip)
-        stdout = ssh_login(cdp_ip, mac_command, mac_address)
-        interface = parse_cdp(stdout, int_pattern)
-        print(f"The associated interface with {mac_address} is: " + interface)
-        last_switch_ip = cdp_ip
+    while cdp_neighbors == 0:
+        cdp_command = (f'show cdp neighbors ')
+        cdp_param = (f'{interface} detail')
+        stdout = ssh_login(cdp_ip, cdp_command, cdp_param)
+        cdp_ip = parse_cdp(stdout, ip_pattern)
+        if cdp_neighbors == 0:
+            print(f"The switch IP address associated with {interface} is: " + cdp_ip)
+            stdout = ssh_login(cdp_ip, mac_command, mac_address)
+            interface = parse_cdp(stdout, int_pattern)
+            print(f"The associated interface with {mac_address} is: " + interface)
+            last_switch_ip = cdp_ip
+        else:
+            print(f'The device is connected to switch {last_switch_ip} port {interface}')
+    stdout = ssh_login(last_switch_ip, snmp_command, '')
+    snmp_list = stdout.readlines()
+    snmp_loc = snmp_list[9]
+    print(f"Location: {snmp_loc}")
+    name = input('Would you like to trace another IP? <Y or N>:')
+    if name == 'y' or 'Y':
+        continue
     else:
-        print(f'The device is connected to switch {last_switch_ip} port {interface}')
-stdout = ssh_login(last_switch_ip, snmp_command, '')
-snmp_list = stdout.readlines()
-snmp_loc = snmp_list[9]
-print(f"Location: {snmp_loc}")
+        exit()
