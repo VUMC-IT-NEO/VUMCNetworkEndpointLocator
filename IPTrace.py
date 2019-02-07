@@ -99,7 +99,7 @@ while True:
     snmp_loc = snmp_list[9]
     print(f"Location: {snmp_loc}")
     name = input('Would you like to trace another IP? <Y or N>:')
-    if name == 'y':
+    if name == 'y' or 'Y':
         continue
     else:
         exit()
