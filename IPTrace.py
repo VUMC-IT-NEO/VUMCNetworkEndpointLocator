@@ -61,7 +61,7 @@ def parse_cdp(response, pattern):
         cdp_neighbors = cdp_neighbors + 1
         return
 
-# METHOD ============================================================
+# Main ============================================================
 while True:
     ip_trace = input('What is the IP you want to trace? ')
     username = input('Username: ')
