@@ -12,7 +12,7 @@ import sys
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 mac_pattern = re.compile('([0-9a-fA-F]{4}.[0-9a-fA-F]{4}.[0-9a-fA-F]{4})')
-int_pattern = re.compile('([a-zA-Z]{1,2}[0-9]{1}/[0-9]{1,2}/?[0-9]{1,2})')
+int_pattern = re.compile('([a-zA-Z]{1,3}[0-9]{1,3}/[0-9]{1,2}/?[0-9]{1,2})')
 ip_pattern = re.compile('IP address: ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})')
 phone_pattern = re.compile('(IP Phone)')
 arp_command = 'show ip arp '
