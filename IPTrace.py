@@ -8,6 +8,8 @@ import paramiko
 from getpass import getpass
 import re
 import sys
+import subprocess
+import os
 # testing out github. here's my change
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -15,10 +17,28 @@ mac_pattern = re.compile('([0-9a-fA-F]{4}.[0-9a-fA-F]{4}.[0-9a-fA-F]{4})')
 int_pattern = re.compile('([a-zA-Z]{1,3}[0-9]{1,3}/[0-9]{1,2}/?[0-9]{1,2})')
 ip_pattern = re.compile('IP address: ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})')
 phone_pattern = re.compile('(IP Phone)')
+unreach_pattern = re.compile('(Destination host unreachable)')
+
 arp_command = 'show ip arp '
 mac_command = 'show mac address-table address '
 snmp_command = 'show snmp location'
 cdp_neighbors = 0
+
+def ping_ip(ip_trace):
+    ping_response = os.system('ping -n 1 '+ ip_trace)
+    #print(ping_response)
+    response = subprocess.check_output(f'ping -n 1 {ip_trace}', shell=True)
+    raw_output = response.decode(encoding='utf-8')
+    unreachable = unreach_pattern.search(raw_output)
+    if unreachable:
+        print(f'Destination host unreachable. {ip_trace} cannot be traced.')
+        return False
+    elif ping_response == 0:
+        print(f'{ip_trace} is up. Continuing trace...')
+        return True
+    else:
+        print(f'{ip_trace} is not on the network and cannot be traced at this time.')
+        return False
 
 def find_gateway(ip_trace):
     gateway_ip_list = ip_trace.split('.')
@@ -66,6 +86,15 @@ while True:
     ip_trace = input('What is the IP you want to trace? ')
     username = input('Username: ')
     password = getpass('Password: ')
+    live_ip = ping_ip(ip_trace)
+    if live_ip == True:
+        print('Ping successful')
+    else:
+        name = input('Would you like to trace another IP? <Y or N>:')
+        if name == 'y' or name == 'Y':
+            continue
+        else:
+            exit()
     gateway_ip = find_gateway(ip_trace)
     print(f'The gateway is {gateway_ip}')
     print(f'Logging into gateway IP: ' + gateway_ip)
