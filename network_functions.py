@@ -36,7 +36,7 @@ def traceroute(ip, max_hops=10, trace_timeout=500):
     ip_pattern = re.compile('([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})')
     unreach_pattern = re.compile('Request timed out')
     print(f'Tracing route to {ip}....')
-    trace_response = subprocess.check_output(f'traceroute -h {max_hops} -w {trace_timeout} {ip}', shell=True)
+    trace_response = subprocess.check_output(f'tracert -h {max_hops} -w {trace_timeout} {ip}', shell=True)
     raw_output = trace_response.decode(encoding='utf-8')
     print(raw_output)
     output_list = raw_output.split('\r\n')
@@ -89,8 +89,8 @@ def vumc_ip_type(ip):
 
 #MAIN:
 
-hop_list = traceroute("10.100.60.8")
-print (hop_list)
+#hop_list = traceroute("10.100.60.8")
+#print (hop_list)
 
 '''
 user = input("Username: ")
