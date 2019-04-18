@@ -71,7 +71,7 @@ def find_gateway(ip_trace, root_ip):
 # function to get log in to a network device and get the next hop for a route.
 def get_next_hop(ip_trace, hop_ip):
     #log in to current hop and return show ip route output
-    print ('Looking for next hop to the Gateway IP for ' + ip_trace)
+    print ('Looking for next hop to the Gateway IP for ' + ip_trace + ' .....')
     response = ssh_login(hop_ip, iproute_cmd, ip_trace)
     ssh_output = response.read()
     raw_output = ssh_output.decode(encoding='utf-8')
@@ -80,14 +80,16 @@ def get_next_hop(ip_trace, hop_ip):
     static = parse(raw_output, static_route_pattern)
 
     print ('\n ')
-    print ('Route Results Summary: \n')
     print ('--------------------------')
+    print ('Route Results Summary: ')
+    print ('--------------------------\n')
     print ('Static: ' + static)
     print ('Route: ' + route)
     print ('Connected: ' + connected)
     print ('--------------------------\n')
 
     if static != "Not Found":
+        print ('-----------------------------------------')
         print ("Found a static next-hop: " + route + '\n')
         print ('-----------------------------------------')
         #extract just the IP from the route
@@ -170,25 +172,47 @@ def parse_cdp(response, pattern):
         cdp_neighbors = cdp_neighbors + 1
         return
 
-# Main ============================================================
+# =========================== Main =================================
 
+print ('######################################################')
+print ('##### Welcome to the VUMC NEO - IP Trace Program #####')
+print ('#####                                            #####')
+print ('##### This program will find information about   #####')
+print ('##### where the device associated with an IP     #####')
+print ('##### is, or was last connected to the network.  ##### ')
+print ('###################################################### \n')
+
+# Gather user data
 print ('Enter the following information for use with all searches:')
 username = input('Username: ')
 password = getpass('Password: ')
-root_ip = input('Enter the IP of a root device in your network (ex. Core-rtr):')
+
+# Code to allow dynamic input of the network root_ip
+#root_ip = input('Enter the IP of a root device in your network (ex. Core-rtr):')
+
+#Code for static root_ip entries
+root_ip = '10.224.0.251'
+alt_root_ip = '10.224.0.252'
 
 while True:
+    # gather IP to trace
     ip_trace = input('What is the IP you want to trace? ')
 
+    # trace to the subnet gateway and router
     gateway_ip = find_gateway(ip_trace, root_ip)
+
+    # if the gateway is not found, Notify user and retry or exit.
     if not gateway_ip:
+        print (f'Gateway IP Not Found. \n')
         retry = input('Would you like to trace another IP? <Y or N>:')
         if retry == 'y' or retry == 'Y':
             continue
         else:
             exit()
+
+    # Print updates about gateway IP
     print(f'The gateway is {gateway_ip}')
-    print(f'Logging into gateway IP: ' + gateway_ip)
+    print(f'Logging into the local router for ' + ip_trace + ': ' + gateway_ip)
     print('\n------------------------------------------------------------')
 
     stdout = ssh_login(gateway_ip, arp_command, ip_trace)
@@ -217,7 +241,11 @@ while True:
     stdout = ssh_login(last_switch_ip, snmp_command, '')
     snmp_list = stdout.readlines()
     snmp_loc = snmp_list[9]
+
+    # print out location result.
     print(f"Location: {snmp_loc}")
+
+    # code to loop the program until a user wants to exit.
     name = input('Would you like to trace another IP? <Y or N>:')
     if name == 'y' or name == 'Y':
         continue
