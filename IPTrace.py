@@ -15,6 +15,10 @@ import paramiko
 from getpass import getpass
 import re
 import sys
+from network_functions import traceroute
+import subprocess
+import os
+import pprint
 # testing out github. here's my change
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -198,6 +202,7 @@ while True:
     # gather IP to trace
     ip_trace = input('What is the IP you want to trace? ')
 
+    hop_list = traceroute(ip_trace)
     # trace to the subnet gateway and router
     gateway_ip = find_gateway(ip_trace, root_ip)
 
