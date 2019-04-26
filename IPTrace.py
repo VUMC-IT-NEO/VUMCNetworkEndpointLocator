@@ -6,7 +6,7 @@ import network_functions
 import subprocess
 import os
 import pprint
-# testing out github. here's my change
+
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 mac_pattern = re.compile('([0-9a-fA-F]{4}.[0-9a-fA-F]{4}.[0-9a-fA-F]{4})')
@@ -29,7 +29,6 @@ cdp_neighbors = 0
 
 # =========================== Main =================================
 
-
 print ('######################################################')
 print ('##### Welcome to the VUMC NEO - IP Trace Program #####')
 print ('#####                                            #####')
@@ -39,7 +38,6 @@ print ('##### is, or was last connected to the network.  ##### ')
 print ('###################################################### \n')
 
 # Gather user data
-print ('Enter the following information for use with all searches:')
 network_functions.get_creds()
 root_ip = '10.224.0.251'
 alt_root_ip = '10.224.0.252'
@@ -68,60 +66,3 @@ while True:
         continue
     else:
         exit()
-
-
-
-
-
-
-
-
-
-'''
-print ('######################################################')
-print ('##### Welcome to the VUMC NEO - IP Trace Program #####')
-print ('#####                                            #####')
-print ('##### This program will find information about   #####')
-print ('##### where the device associated with an IP     #####')
-print ('##### is, or was last connected to the network.  ##### ')
-print ('###################################################### \n')
-
-# Gather user data
-print ('Enter the following information for use with all searches:')
-username = input('Username: ')
-password = getpass('Password: ')
-
-# Code to allow dynamic input of the network root_ip
-#root_ip = input('Enter the IP of a root device in your network (ex. Core-rtr):')
-
-#Code for static root_ip entries
-root_ip = '10.224.0.251'
-alt_root_ip = '10.224.0.252'
-
-while True:
-    # gather IP to trace
-    ip_trace = input('What is the IP you want to trace? ')
-
-    hop_list = traceroute(ip_trace)
-    # trace to the subnet gateway and router
-    gateway_ip = find_gateway(ip_trace, root_ip)
-
-    # if the gateway is not found, Notify user and retry or exit.
-    if not gateway_ip:
-        print (f'Gateway IP Not Found. \n')
-        retry = input('Would you like to trace another IP? <Y or N>:')
-        if retry == 'y' or retry == 'Y':
-            continue
-        else:
-            exit()
-
-    # Print updates about gateway IP
-
-
-    # code to loop the program until a user wants to exit.
-    name = input('Would you like to trace another IP? <Y or N>:')
-    if name == 'y' or name == 'Y':
-        continue
-    else:
-        exit()
-'''
