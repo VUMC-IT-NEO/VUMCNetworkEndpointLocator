@@ -52,29 +52,27 @@ def vumc_ip_type(ip):
     if octet_list[0] == '10':
         if octet_list[1] == '248' or octet_list[1] == '249' or octet_list[1] == '250' or octet_list[1] == '251':
             print(f'{ip} is a VUMC Wireless IP')
-            ip_type += 1
+            ip_type = 1
             return ip_type
         else:
             print(f'{ip} is a VUMC wired IP')
-            ip_type += 2
+            ip_type = 2
             return ip_type
     elif octet_list[0] == '160' and octet_list[1] == '129':
         print(f'{ip} is a VUMC public IP address')
-        ip_type += 3
+        ip_type = 3
         return ip_type
     elif octet_list[0] == '129' and octet_list[1] == '59':
         print(f'{ip} is a VU public IP address')
-        ip_type += 4
+        ip_type = 4
         return ip_type
     else:
         print(f'{ip} is not a VUMC IP address')
-        ip_type += 5
+        ip_type = 5
         return ip_type
 
 def find_gateway(ip_trace, root_ip):
-    print(f'Attempting to trace route to {ip_trace}. Stand by.....')
     hop_list = traceroute(ip_trace)
-    print(hop_list)
     if hop_list != 'unreachable':
         print(f'Contacting gateway device {hop_list[-2]}')
         return hop_list[-2]
