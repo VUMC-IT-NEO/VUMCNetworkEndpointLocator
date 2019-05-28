@@ -19,7 +19,7 @@ from pprint import pprint
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 mac_pattern = re.compile('([0-9a-fA-F]{4}.[0-9a-fA-F]{4}.[0-9a-fA-F]{4})')
-int_pattern = re.compile('([a-zA-Z]{1,2}[0-9]{1}/[0-9]{1,2}/?[0-9]{1,2})')
+int_pattern = re.compile('([a-zA-Z]{1,3}[0-9]{1}/[0-9]{1,2}/?[0-9]{1,2})')
 po_int_pattern = re.compile('([A-Z]{1}[a-z]{1}[0-9]{1,4})')
 ip_pattern = re.compile('IP address: ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})')
 subnet_pattern = re.compile('([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,2})')
@@ -28,6 +28,7 @@ ip_config_pattern = re.compile('ip address ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.
 next_hop_pattern = re.compile('\*via ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})')
 static_route_pattern = re.compile('static')
 connected_pattern = re.compile('directly connected, via Vlan([0-9]{1,4})')
+po_pattern = re.compile('Po1')
 phone_pattern = re.compile('(IP Phone)')
 show_run_int_cmd = 'show run interface '
 arp_command = 'show ip arp '
@@ -187,7 +188,9 @@ def parse(response, pattern):
         raw_output = ssh_output.decode(encoding='utf-8')
     except:
         raw_output = response
+    #print(raw_output)
     match = pattern.search(raw_output)
+
 #    return matched_value
     if match:
         matched_value = match.group(0)
@@ -214,7 +217,7 @@ def parse_cdp(response, pattern):
 def getWirelessIpInfo(ipaddr):
     user = username
     pw = password
-    print(user)
+    #print(user)
     api = PIAPI("https://10.109.24.16/", user, pw, verify=False)
 
     reply = api.request("ClientDetails", params={".full": "true", "ipAddress": ipaddr})
@@ -224,11 +227,109 @@ def getWirelessIpInfo(ipaddr):
     ipInfo = "The device you searched for was last seen in " + location + " connected to " + attached_ap + " on the " + ssid + " network."
     return ipInfo
 
+def wirelessInfoParse(ipInfo):
+    buildingDict = {'MCN':'MCN - Medical Center North',
+                    'VUH':'VUH - Vanderbilt Main Hospital',
+                    'ALN':'ALN - 2146 Belcourt Ave',
+                    'B20':'B20 - 2120 Belcourt Ave',
+                    'B47':'B47 - 2147 Belcourt Ave',
+                    'EYE':'EYE - 2141 Blakemore',
+                    'HUD':'HUD - 2135 Blakemore',
+                    'OXF':'OXF - Oxford House',
+                    'Oxford':'OXF - Oxford Trailer',
+                    'A17':'',
+                    'B40':'','A17 - 1207 17th Ave. South',
+                    'BWC':'BWC - Medical Center East - South Tower',
+                    'MCE':'MCE - Medical Center East - North Tower',
+                    'CRY':'CRY - Crystal Terrace',
+                    'DC3':'DC3 - Tierpoint',
+                    'DOT':'DOT - Doctors Office Tower',
+                    'DYN':'DYN - Dayani Center',
+                    'GHO':'GHO - Green Hills Office Building',
+                    'LTH':'LTH - Light Hall',
+                    'MAB':'MAB - Medical Arts Building',
+                    'MR1':'',
+                    'MR2':'',
+                    'MR4':'',
+                    'OCC01':'',
+                    'OHO':'OHO - One Hundred Oaks',
+                    'OHT':'',
+                    'OXF':'OXF - Oxford House',
+                    'PHV':'PHV - Vanderbilt Psych Hospital',
+                    'STL':'',
+                    'TVC':'TVC - The Vanderbilt Clinic',
+                    'VAV':'VAV - Village at Vanderbilt',
+                    'VCH':'',
+                    'VEI':'',
+                    'CCT':'CCT - Critical Care Tower',
+                    'VUIIS':'',
+                    'W01':'W01 - 3401 West End',
+                    'W22':'',
+                    'W25':'W25 - 2525 West End',
+                    'ZER':'ZER - Zerfoss',
+                    'BEL':'',
+                    'BLW':'',
+                    'BMW':'',
+                    'BPC':'',
+                    'BRD':'',
+                    'BUS':'',
+                    'CBC':'',
+                    'CLR':'',
+                    'CWH':'',
+                    'FBJ':'',
+                    'FBS':'',
+                    'FKR':'',
+                    'FKW':'',
+                    'FKY':'',
+                    'FMC':'',
+                    'FRE':'',
+                    'FWC':'',
+                    'GHI':'',
+                    'GOI':'',
+                    'GRH':'',
+                    'GRO':'',
+                    'HPD':'',
+                    'LEC':'',
+                    'LFA':'',
+                    'LFB':'',
+                    'LFC':'',
+                    'LFH':'',
+                    'LFL':'',
+                    'LFM':'',
+                    'LFP':'',
+                    'LFT':'',
+                    'LFV':'',
+                    'MBC':'',
+                    'MEI':'',
+                    'MET':'',
+                    'MEW':'',
+                    'MJO':'',
+                    'MJP':'',
+                    'NOR':'',
+                    'PAT':'',
+                    'SHR':'',
+                    'SPH':'',
+                    'VNM':'',
+                    'VOP':'',
+                    'VSC':'',
+                    'WEH':'',
+                    'WMC':'',
+                    'CSO':'',
+                    'CSR':'',
+                    'FKA':'',
+                    'FKB':'',
+                    'VCS':''
+                    }
+    apInfoList = ipInfo.split('-')
+    building = buildingDict[apInfoList[0]]
+    floorNumber = buildingDict[apInfoList[1]]
+    print(f'The device is in {building} on floor {floorNumber}')
+
 # takes a single IP input, runs a traceroute, and returns a list of every IP hop
 def traceroute(ip, max_hops=10, trace_timeout=500):
     ip_pattern = re.compile('([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})')
     unreach_pattern = re.compile('Request timed out')
-    print(f'Tracing route to {ip}....')
+    print('Initiating traceroute....')
     trace_response = subprocess.check_output(f'tracert -h {max_hops} -w {trace_timeout} {ip}', shell=True)
     raw_output = trace_response.decode(encoding='utf-8')
     print(raw_output)
@@ -249,6 +350,7 @@ def traceroute(ip, max_hops=10, trace_timeout=500):
             continue
     print('Hop List: \n')
     pprint(hop_list)
+    print('\n------------------------------------------------------------')
     return hop_list
 
 # function to validate whether an IP is a valid VUMC network IP, a public IP, or
@@ -287,8 +389,11 @@ def mac_trace(gateway_ip, ip_trace):
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     mac_pattern = re.compile('([0-9a-fA-F]{4}.[0-9a-fA-F]{4}.[0-9a-fA-F]{4})')
-    int_pattern = re.compile('([a-zA-Z]{1,2}[0-9]{1}/[0-9]{1,2}/?[0-9]{1,2})')
+    int_pattern = re.compile('([a-zA-Z]{1,3}[0-9]{1}/[0-9]{1,2}/?[0-9]{1,2})')
     ip_pattern = re.compile('IP address: ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})')
+    po_pattern = re.compile('Po([0-9]{1,4})')
+    global cdp_neighbors
+
 
     print(f'The gateway is {gateway_ip}')
     print(f'Logging into the local router for ' + ip_trace + ': ' + gateway_ip)
@@ -300,6 +405,11 @@ def mac_trace(gateway_ip, ip_trace):
 
     stdout = ssh_login(gateway_ip, mac_command, mac_address)
     interface = parse(stdout, int_pattern)
+    if interface == 'Not Found':
+        stdout = ssh_login(gateway_ip, mac_command, mac_address)
+        interface = parse(stdout, po_pattern)
+        if interface:
+            interface = interface.replace("Po", "port-channel ")
     print(f"The associated interface with {mac_address} is: " + interface)
 
     cdp_ip = gateway_ip
@@ -309,13 +419,21 @@ def mac_trace(gateway_ip, ip_trace):
         cdp_param = (f'{interface} detail')
         stdout = ssh_login(cdp_ip, cdp_command, cdp_param)
         cdp_ip = parse_cdp(stdout, ip_pattern)
+        #print(cdp_ip)
         if cdp_neighbors == 0:
             print(f"The switch IP address associated with {interface} is: " + cdp_ip)
             stdout = ssh_login(cdp_ip, mac_command, mac_address)
             interface = parse_cdp(stdout, int_pattern)
-            print(f"The associated interface with {mac_address} is: " + interface)
             last_switch_ip = cdp_ip
+            #print(f'first {interface}')
+            if not interface:
+                stdout = ssh_login(cdp_ip, mac_command, mac_address)
+                interface = parse_cdp(stdout, po_pattern)
+                #print(f'second {interface}')
+                print(f"The associated interface with {mac_address} is: " + interface)
+
         else:
+            print(f'\n' * 2 + '------------------------------------------------------------\n')
             print(f'The device is connected to switch {last_switch_ip} port {interface}')
     stdout = ssh_login(last_switch_ip, snmp_command, '')
     snmp_list = stdout.readlines()
